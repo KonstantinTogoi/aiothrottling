@@ -10,11 +10,11 @@ with open(readme_path) as readme_file:
 
 setup(
     name='aiothrottling',
-    version='0.0.1',
+    version='0.0.2',
     author='Konstantin Togoi',
     author_email='konstantin.togoi@protonmail.com',
-    url='https://github.com/KonstantinTogoi/aiovkcom',
-    description='vk.com Python REST API wrapper',
+    url='https://github.com/KonstantinTogoi/aiothrottling',
+    description='Throttles for Python coroutines.',
     long_description=readme,
     long_description_content_type='text/markdown',
     license='BSD',

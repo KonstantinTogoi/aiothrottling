@@ -63,8 +63,8 @@ async def foo(n):
     print(n, time.time())
 
 for i in range(5):
-    await throttle
-    await foo(i)
+    async with throttle:
+        await foo(i)
 
 # 0 1563275898.6722345
 # 1 1563275899.673589
