@@ -16,7 +16,7 @@ class Throttle:
 
     @property
     def rate(self):
-        return f'{self.limit}/{self.period}'
+        return '{limit}/{period}'.format(limit=self.limit, period=self.period)
 
     @rate.setter
     def rate(self, value):
