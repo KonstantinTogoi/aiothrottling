@@ -1,4 +1,5 @@
 import asyncio
+import re
 from functools import wraps
 from time import time
 
@@ -11,6 +12,18 @@ class Throttle:
     """
 
     PERIOD = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+    RATE_MASK = re.compile(r'([0-9]*)([A-Za-z]+)')
+
+    @property
+    def rate(self):
+        return f'{self.limit}/{self.period}'
+
+    @rate.setter
+    def rate(self, value):
+        num, period = value.split('/')
+        self.limit = int(num)
+        factor, base = self.RATE_MASK.match(period).groups()
+        self.period = (int(factor or 1)) * self.PERIOD[base[0].lower()]
 
     __slots__ = ('history', 'limit', 'period')
 
@@ -33,16 +46,6 @@ class Throttle:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         pass
-
-    @property
-    def rate(self):
-        return '{limit}/{period}'.format(limit=self.limit, period=self.period)
-
-    @rate.setter
-    def rate(self, value):
-        num, period = value.split('/')
-        self.limit = int(num)
-        self.period = self.PERIOD[period[0]]
 
     async def delay(self):
         while True:
