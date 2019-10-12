@@ -1,14 +1,34 @@
 # aiothrottling
-Throttles for Python coroutines.
 
-## Example
+Throttles for Python coroutines. Supports Python 3.5, 3.6, 3.7.
+
+## Getting started
+
+Install package using pip
+
+```python
+pip install aiothrottling
+```
+
+## Examples
+
+### rates
+
+Pass the rate in the format `{limit}/{base period name}` or `{limit}/{factor}{base period name}`, for example
+
+- full period name
+    + `1/second`, `2/minute`, `3/hour`, `4/day`
+- short period name
+    + `4/s`, `5/m`, `6/h`, `7/d`
+- set custom period by using a factor
+    + `1/3s`, `12/37m`, `1/5h`, `8/3d`
 
 ### decorator
 
 Use of `aiothrottling.Throttle` as decorator for coroutines:
 
 ```python
-from aiothrottling import throttle  # Throttler alias
+from aiothrottling import throttle  # Throttle alias
 import time
 
 @throttle(rate='1/s')
