@@ -82,14 +82,29 @@ class DistributedThrottle(BaseThrottle):
     def n_resources(self):
         return len(self.resources)
 
-    __slots__ = ('resources', 'shuffle', 'histories', 'blocked')
+    __slots__ = ('resources', 'shuffle', 'histories', 'blocked', 'lock')
 
-    def __init__(self, resources, rate='3/s', shuffle=False):
+    def __init__(self, resources, rate='3/s', shuffle=False, lock=None):
         super().__init__(rate)
         self.resources = resources
         self.shuffle = shuffle
+        self.lock = lock
         self.histories = [(i, deque()) for i in range(len(resources))]
         self.blocked = []
+
+    async def __aenter__(self):
+        if self.lock:
+            for res in self.resources:
+                await self.lock.acquire(self.pk(res))
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.lock:
+            for res in self.resources:
+                await self.lock.release(self.pk(res))
+
+    def pk(self, resource):
+        ix = self.resources.index(resource)
+        return bytes(ix)
 
     def block(self, resource):
         ix = self.resources.index(resource)
