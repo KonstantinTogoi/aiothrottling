@@ -1,7 +1,7 @@
 # aiothrottling
 
-![PyPI](https://img.shields.io/pypi/v/aiothrottling.svg)
-![PyPI version](https://img.shields.io/pypi/pyversions/aiothrottling.svg)
+[![PyPI](https://img.shields.io/pypi/v/aiothrottling.svg)](https://pypi.python.org/pypi/aiothrottling)
+[![PyPI version](https://img.shields.io/pypi/pyversions/aiothrottling.svg)](https://pypi.python.org/pypi/aiothrottling)
 
 Throttles for Python coroutines.
 
