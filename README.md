@@ -1,10 +1,13 @@
 # aiothrottling
 
-Throttles for Python coroutines. Supports Python 3.5, 3.6, 3.7.
+![PyPI](https://img.shields.io/pypi/v/aiothrottling.svg)
+![PyPI version](https://img.shields.io/pypi/pyversions/aiothrottling.svg)
+
+Throttles for Python coroutines.
 
 ## Getting started
 
-Install package using pip
+aiothrottling requires python 3.5+. Install package using pip
 
 ```python
 pip install aiothrottling
