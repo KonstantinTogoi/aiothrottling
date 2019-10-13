@@ -7,58 +7,51 @@ import redis
 log = logging.getLogger(__name__)
 
 
-class BaseLock:
+class Lock:
     """Base resources lock."""
 
-    __slots__ = ()
+    __slots__ = ('retry_interval', )
 
-    async def acquire(self, pk: bytes):
+    def __init__(self, retry_interval=1):
+        self.retry_interval = retry_interval
+
+    async def acquire(self, pk):
+        while await self.check(pk):
+            await asyncio.sleep(self.retry_interval)
+        else:
+            await self.check_in(pk)
+
+    async def release(self, pk):
+        await self.check_out(pk)
+
+    async def check_in(self, pk, digest=b'1'):
         raise NotImplementedError()
 
-    async def release(self, pk: bytes):
+    async def check(self, pk):
+        raise NotImplementedError()
+
+    async def check_out(self, pk):
         raise NotImplementedError()
 
 
-class RedisLock(BaseLock):
+class RedisLock(Lock):
 
-    INTERVAL = 15
-
-    def __init__(self, conn=None, hash_name='locked', verbose=False):
+    def __init__(self, conn=None, hash_name='locked'):
+        super().__init__()
         self.conn = conn or {}
         self.cache = None
         self.hash_name = hash_name
-        self.verbose = verbose
 
     async def init(self):
         if self.cache is None:
             pool = redis.ConnectionPool(**self.conn)
             self.cache = redis.Redis(connection_pool=pool)
 
-    async def acquire(self, pk: bytes):
-        if self.verbose:
-            log.info('locking in {}'.format(pk))
-        while self.check(pk):
-            if self.verbose:
-                log.info('resource with pk {} is locked'.format(pk))
-            await asyncio.sleep(self.INTERVAL)
-        else:
-            self.check_in(pk, b'1')
-
-    async def release(self, pk: bytes):
-        if self.verbose:
-            log.info('releasing {}'.format(pk))
-
-    def check_in(self, pk: bytes, digest: bytes):
-        if self.verbose:
-            log.info('checking in a digest with pk = {}'.format(pk))
+    async def check_in(self, pk: bytes, digest: bytes = b'1'):
         self.cache.hmset(self.hash_name, {pk: digest})
 
-    def check(self, pk: bytes):
-        if self.verbose:
-            log.info('checking a digest with pk = {}'.format(pk))
+    async def check(self, pk: bytes):
         return self.cache.hget(self.hash_name, pk)
 
-    def check_out(self, pk: bytes):
-        if self.verbose:
-            log.info('checking out a digest with pk = {}'.format(pk))
+    async def check_out(self, pk: bytes):
         self.cache.hdel(self.hash_name, pk)
