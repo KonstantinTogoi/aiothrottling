@@ -10,7 +10,7 @@ with open(readme_path) as readme_file:
 
 setup(
     name='aiothrottling',
-    version='0.0.2',
+    version='0.0.3',
     author='Konstantin Togoi',
     author_email='konstantin.togoi@protonmail.com',
     url='https://github.com/KonstantinTogoi/aiothrottling',
