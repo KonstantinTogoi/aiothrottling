@@ -10,7 +10,7 @@ with open(readme_path) as readme_file:
 
 setup(
     name='aiothrottling',
-    version='0.0.2',
+    version='0.0.3',
     author='Konstantin Togoi',
     author_email='konstantin.togoi@protonmail.com',
     url='https://github.com/KonstantinTogoi/aiothrottling',
@@ -24,8 +24,12 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
+    ],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest', 'pytest-asyncio']
 )
