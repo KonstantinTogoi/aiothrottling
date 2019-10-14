@@ -2,6 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/aiothrottling.svg)](https://pypi.python.org/pypi/aiothrottling)
 [![PyPI version](https://img.shields.io/pypi/pyversions/aiothrottling.svg)](https://pypi.python.org/pypi/aiothrottling)
+[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://KonstantinTogoi.github.io/aiothrottling)
 
 Throttles for Python coroutines.
 
@@ -17,7 +18,7 @@ pip install aiothrottling
 
 ### rates
 
-Pass the rate in the format `{limit}/{base period name}` or `{limit}/{factor}{base period name}`, for example
+The allowed coroutine call rate is determined by the ``rate`` argument. Pass the rate in the format `{limit}/{base period name}` or `{limit}/{factor}{base period name}`, for example
 
 - full period name
     + `1/second`, `2/minute`, `3/hour`, `4/day`
