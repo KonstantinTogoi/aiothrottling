@@ -5,7 +5,7 @@ from ..cache import Cache
 
 
 class Lock:
-    """Abstract resources lock."""
+    """Simple lock interface."""
 
     async def acquire(self, *args):
         pass
@@ -14,8 +14,8 @@ class Lock:
         pass
 
 
-class CacheLock(Cache):
-    """Lock that checks in a smth as a couple of (key, digest)."""
+class ExclusiveCacheLock(Cache):
+    """Lock that uses cache with exclusive keys."""
 
     __slots__ = ('retry_interval', )
 
