@@ -6,6 +6,8 @@ from collections import deque
 from functools import wraps
 from time import time
 
+from .lock import Lock
+
 
 class BaseThrottle:
     """Abstract throttle."""
@@ -78,7 +80,7 @@ class LockingThrottle(BaseThrottle):
 
     __slots__ = ('resources', 'lock')
 
-    def __init__(self, resources, rate='3/s', lock=None):
+    def __init__(self, resources, rate='3/s', lock: Lock = None):
         super().__init__(rate)
         self.resources = resources
         self.lock = lock
