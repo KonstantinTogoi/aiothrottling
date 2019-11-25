@@ -27,8 +27,6 @@ class CacheLock(Lock, Cache):
 class ExclusiveLock(Cache):
     """Lock that uses cache with exclusive keys."""
 
-    __slots__ = ('retry_interval', )
-
     def __init__(self, retry_interval=1):
         self.retry_interval = retry_interval
 
@@ -42,5 +40,5 @@ class ExclusiveLock(Cache):
         await self.check_out(key)
 
 
-class MemoryLock(ExclusiveLock, MemoryCache):
+class MemoryLock(MemoryCache, ExclusiveLock):
     """Lock that uses memory for locking."""
