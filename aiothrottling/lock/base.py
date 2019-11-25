@@ -1,7 +1,7 @@
-"""Module with locks for resources."""
+"""Module with abstract lock."""
 import asyncio
 
-from .cache import Cache, RedisCache
+from ..cache import Cache
 
 
 class Lock(Cache):
@@ -20,13 +20,3 @@ class Lock(Cache):
 
     async def release(self, pk):
         await self.check_out(pk)
-
-
-class RedisLock(RedisCache, Lock):
-    """Redis-based lock."""
-
-    def __init__(self, conn=None, hash_name='locked'):
-        super().__init__(conn, hash_name)
-
-    async def acquire(self, pk: bytes, digest: bytes = b'1'):
-        return await super().acquire(pk, digest)

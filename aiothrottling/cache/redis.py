@@ -1,18 +1,7 @@
-"""Module with cache definitions."""
-from redis import ConnectionPool, Redis
+"""Module with Redis based cache."""
+from redis import Redis, ConnectionPool
 
-
-class Cache:
-    """Simple cache interface."""
-
-    async def check_in(self, pk, digest):
-        raise NotImplementedError()
-
-    async def check(self, pk):
-        raise NotImplementedError()
-
-    async def check_out(self, pk):
-        raise NotImplementedError()
+from ..cache import Cache
 
 
 class RedisCache(Cache):
