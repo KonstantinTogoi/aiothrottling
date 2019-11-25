@@ -3,6 +3,7 @@ from time import time
 import pytest
 
 from aiothrottling import Throttle, DistributedThrottle
+from aiothrottling.lock import MemoryLock
 
 
 class TestThrottle:
@@ -71,6 +72,11 @@ class TestDistributedThrottle:
     async def shuffled_throttle(self, resources, rate):
         return DistributedThrottle(resources, rate=rate, shuffle=True)
 
+    @pytest.fixture
+    @pytest.mark.asyncio
+    async def locking_throttle(self, resources, rate):
+        return DistributedThrottle(resources, rate=rate, lock=MemoryLock())
+
     @pytest.mark.asyncio
     async def test_acquire(self, throttle):
         await self._test_acquire(throttle)
@@ -78,6 +84,10 @@ class TestDistributedThrottle:
     @pytest.mark.asyncio
     async def test_acquire_with_shuffle(self, shuffled_throttle):
         await self._test_acquire(shuffled_throttle)
+
+    @pytest.mark.asyncio
+    async def test_acquire_with_locking(self, locking_throttle):
+        await self._test_acquire(locking_throttle)
 
     @staticmethod
     async def _test_acquire(throttle):
