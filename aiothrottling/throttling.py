@@ -8,7 +8,7 @@ from time import time
 
 
 class BaseThrottle:
-    """Base throttle."""
+    """Abstract throttle."""
 
     PERIOD = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
     RATE_MASK = re.compile(r'([0-9]*)([A-Za-z]+)')
@@ -73,24 +73,15 @@ class Throttle(BaseThrottle):
                 await asyncio.sleep(delay)
 
 
-class DistributedThrottle(BaseThrottle):
-    """Distributed throttle."""
+class LockingThrottle(BaseThrottle):
+    """Abstract throttle that can lock resources."""
 
-    NO_RESOURCES_ERROR = RuntimeError('no resources available')
+    __slots__ = ('resources', 'lock')
 
-    @property
-    def n_resources(self):
-        return len(self.resources)
-
-    __slots__ = ('resources', 'shuffle', 'histories', 'blocked', 'lock')
-
-    def __init__(self, resources, rate='3/s', shuffle=False, lock=None):
+    def __init__(self, resources, rate='3/s', lock=None):
         super().__init__(rate)
         self.resources = resources
-        self.shuffle = shuffle
         self.lock = lock
-        self.histories = [(i, deque()) for i in range(len(resources))]
-        self.blocked = []
 
     async def __aenter__(self):
         if self.lock:
@@ -103,20 +94,42 @@ class DistributedThrottle(BaseThrottle):
                 await self.lock.release(self.pk(res))
 
     def pk(self, resource):
+        """A resource's key for lock table."""
         ix = self.resources.index(resource)
         return bytes(ix)
 
+
+class DistributedThrottle(LockingThrottle):
+    """Distributed throttle."""
+
+    NO_RESOURCES_ERROR = RuntimeError('no resources available')
+
+    @property
+    def n_resources(self):
+        return len(self.resources)
+
+    __slots__ = ('shuffle', 'histories', 'blocked')
+
+    def __init__(self, resources, rate='3/s', lock=None, shuffle=False):
+        super().__init__(resources, rate=rate, lock=lock)
+        self.shuffle = shuffle
+        self.histories = [(i, deque()) for i in range(len(resources))]
+        self.blocked = []
+
     def block(self, resource):
+        """Marks a resource as invalid / unavailable."""
         ix = self.resources.index(resource)
         self.blocked.append(ix)
 
     def flush(self, now):
+        """Cleans resources' histories."""
         for i, history in self.histories:
             while history and now - history[0] > self.period:
                 history.popleft()
 
     @asynccontextmanager
     async def acquire(self, num=None):
+        """Returns available resource."""
         histories = self.histories if num is None else [self.histories[num]]
         histories = [(i, h) for i, h in histories if i not in self.blocked]
 
