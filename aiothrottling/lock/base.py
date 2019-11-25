@@ -14,6 +14,16 @@ class Lock:
         pass
 
 
+class CacheLock(Lock, Cache):
+    """Lock that uses cache."""
+
+    async def acquire(self, *args):
+        return self.check_in(*args)
+
+    async def release(self, *args):
+        return self.check_out(*args)
+
+
 class ExclusiveCacheLock(Cache):
     """Lock that uses cache with exclusive keys."""
 
