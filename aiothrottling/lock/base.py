@@ -1,7 +1,7 @@
 """Module with abstract lock."""
 import asyncio
 
-from ..cache import Cache
+from ..cache import Cache, MemoryCache
 
 
 class Lock:
@@ -40,3 +40,7 @@ class ExclusiveLock(Cache):
 
     async def release(self, key):
         await self.check_out(key)
+
+
+class MemoryLock(ExclusiveLock, MemoryCache):
+    """Lock that uses memory for locking."""

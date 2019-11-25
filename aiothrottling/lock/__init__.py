@@ -1,1 +1,1 @@
-from .base import Lock, CacheLock
+from .base import Lock, CacheLock, ExclusiveLock, MemoryLock

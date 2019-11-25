@@ -1,1 +1,1 @@
-from .base import Cache
+from .base import Cache, MemoryCache
