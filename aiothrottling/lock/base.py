@@ -4,8 +4,18 @@ import asyncio
 from ..cache import Cache
 
 
-class Lock(Cache):
+class Lock:
     """Abstract resources lock."""
+
+    async def acquire(self, *args):
+        pass
+
+    async def release(self, *args):
+        pass
+
+
+class CacheLock(Cache):
+    """Lock that checks in a smth as a couple of (key, digest)."""
 
     __slots__ = ('retry_interval', )
 

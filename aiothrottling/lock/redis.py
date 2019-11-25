@@ -1,8 +1,8 @@
-from ..lock import Lock
+from .base import CacheLock
 from ..cache.redis import RedisCache
 
 
-class RedisLock(RedisCache, Lock):
+class RedisLock(RedisCache, CacheLock):
     """Redis-based lock."""
 
     def __init__(self, conn=None, hash_name='locked'):
