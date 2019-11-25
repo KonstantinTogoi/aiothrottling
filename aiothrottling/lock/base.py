@@ -24,7 +24,7 @@ class CacheLock(Lock, Cache):
         return self.check_out(key)
 
 
-class ExclusiveCacheLock(Cache):
+class ExclusiveLock(Cache):
     """Lock that uses cache with exclusive keys."""
 
     __slots__ = ('retry_interval', )
