@@ -17,11 +17,11 @@ class Lock:
 class CacheLock(Lock, Cache):
     """Lock that uses cache."""
 
-    async def acquire(self, *args):
-        return self.check_in(*args)
+    async def acquire(self, key, value):
+        return self.check_in(key, value)
 
-    async def release(self, *args):
-        return self.check_out(*args)
+    async def release(self, key):
+        return self.check_out(key)
 
 
 class ExclusiveCacheLock(Cache):
@@ -32,11 +32,11 @@ class ExclusiveCacheLock(Cache):
     def __init__(self, retry_interval=1):
         self.retry_interval = retry_interval
 
-    async def acquire(self, pk, digest):
-        while await self.check(pk):
+    async def acquire(self, key, value):
+        while await self.check(key):
             await asyncio.sleep(self.retry_interval)
         else:
-            await self.check_in(pk, digest)
+            await self.check_in(key, value)
 
-    async def release(self, pk):
-        await self.check_out(pk)
+    async def release(self, key):
+        await self.check_out(key)
