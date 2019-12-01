@@ -91,13 +91,17 @@ class TestDistributedThrottle:
 
     @staticmethod
     async def _test_acquire(throttle):
-        n_resources = len(throttle.resources)
-        interval = throttle.period / throttle.limit / n_resources
+        max_n_calls = throttle.limit * len(throttle.resources)
 
-        names = []
-        for i in range(len(throttle.resources) * 3):
-            last_time = 0
-            async with throttle.acquire() as resource:
-                current_time = time()
-                assert (current_time - last_time) > interval
-                names.append(resource.name)
+        start_time = time()
+        for i in range(max_n_calls):
+            async with throttle.acquire():
+                pass
+        stop_time = time()
+
+        assert stop_time - start_time <= throttle.period
+
+        async with throttle.acquire():
+            pass
+
+        assert time() - start_time > throttle.period
