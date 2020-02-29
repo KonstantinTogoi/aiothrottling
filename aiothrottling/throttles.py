@@ -37,20 +37,6 @@ class ThrottleMixin:
     def __init__(self, rate):
         self.rate = rate
 
-
-class Throttle(ThrottleMixin):
-    """
-    Rate throttling of coroutine calls.
-
-    Instance of this class is awaitable object.
-    """
-
-    __slots__ = ('history', )
-
-    def __init__(self, rate):
-        super().__init__(rate)
-        self.history = []
-
     def __call__(self, coro):
         @wraps(coro)
         async def wrapper(*args, **kwargs):
@@ -66,6 +52,26 @@ class Throttle(ThrottleMixin):
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self.release()
+
+    async def acquire(self):
+        pass
+
+    def release(self):
+        pass
+
+
+class Throttle(ThrottleMixin):
+    """
+    Rate throttling of coroutine calls.
+
+    Instance of this class is awaitable object.
+    """
+
+    __slots__ = ('history', )
+
+    def __init__(self, rate):
+        super().__init__(rate)
+        self.history = []
 
     async def acquire(self):
         while True:
