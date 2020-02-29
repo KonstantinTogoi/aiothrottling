@@ -8,8 +8,8 @@ from time import time
 from .lock import Lock
 
 
-class BaseThrottle:
-    """Abstract throttle."""
+class ThrottleMixin:
+    """Encapsulates rate."""
 
     PERIOD = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
     RATE_MASK = re.compile(r'([0-9]*)([A-Za-z]+)')
@@ -31,7 +31,7 @@ class BaseThrottle:
         self.rate = rate
 
 
-class Throttle(BaseThrottle):
+class Throttle(ThrottleMixin):
     """
     Rate throttling of coroutine calls.
 
@@ -74,7 +74,7 @@ class Throttle(BaseThrottle):
                 await asyncio.sleep(delay)
 
 
-class LockingThrottle(BaseThrottle):
+class LockingThrottle(ThrottleMixin):
     """Abstract throttle that can lock resources."""
 
     __slots__ = ('resources', 'lock')
