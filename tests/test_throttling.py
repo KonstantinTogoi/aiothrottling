@@ -43,6 +43,7 @@ class TestThrottle:
             if i % throttle.limit == 0:
                 assert time() - now >= interval
                 now = time()
+            throttle.release()
 
     @pytest.mark.asyncio
     async def test_context(self, throttle):

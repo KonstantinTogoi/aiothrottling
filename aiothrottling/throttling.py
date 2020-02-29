@@ -1,3 +1,7 @@
+"""Rate limiting primitives."""
+
+__all__ = ['Throttle', 'LockingThrottle', 'DistributedThrottle']
+
 import asyncio
 import random
 import re
@@ -47,8 +51,8 @@ class Throttle(ThrottleMixin):
     def __call__(self, coro):
         @wraps(coro)
         async def wrapper(*args, **kwargs):
-            await self.delay()
-            return await coro(*args, **kwargs)
+            async with self:
+                return await coro(*args, **kwargs)
         return wrapper
 
     def __await__(self):
@@ -58,7 +62,7 @@ class Throttle(ThrottleMixin):
         await self.delay()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        pass
+        self.release()
 
     async def delay(self):
         while True:
@@ -67,11 +71,13 @@ class Throttle(ThrottleMixin):
                 self.history.pop()
 
             if len(self.history) < self.limit:
-                self.history.insert(0, now)
                 break
             else:
                 delay = self.period - (now - self.history[-1])
                 await asyncio.sleep(delay)
+
+    def release(self):
+        self.history.insert(0, time())
 
 
 class LockingThrottle(ThrottleMixin):
