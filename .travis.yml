@@ -21,9 +21,5 @@ matrix:
     - python: "3.8"
       dist: xenial
 
-install:
-  - pip install pytest
-  - pip install .
-
 script:
-  - pytest -v
+  - python setup.py test
