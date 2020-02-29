@@ -3,6 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/aiothrottling.svg)](https://pypi.python.org/pypi/aiothrottling)
 [![PyPI version](https://img.shields.io/pypi/pyversions/aiothrottling.svg)](https://pypi.python.org/pypi/aiothrottling)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://aiothrottling.readthedocs.io/en/latest/)
+[![Travis status](https://travis-ci.org/KonstantinTogoi/aiothrottling.svg)](https://travis-ci.org/KonstantinTogoi/aiothrottling)
 
 Throttles for Python coroutines.
 
