@@ -19,21 +19,29 @@ from .lock import Lock
 class ThrottleMixin:
     """Encapsulates rate."""
 
-    PERIOD = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+    DURATIONS = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
     RATE_MASK = re.compile(r'([0-9]*)([A-Za-z]+)')
 
     @property
     def rate(self):
-        return '{limit}/{period}'.format(limit=self.limit, period=self.period)
+        return '{limit}/{factor}{period_name}'.format(
+            limit=self.limit,
+            factor=self.factor or '',
+            period_name=self.period_name
+        )
 
     @rate.setter
     def rate(self, value):
-        num, period = value.split('/')
-        factor, base = self.RATE_MASK.match(period).groups()
-        self.limit = int(num)
-        self.period = (int(factor or 1)) * self.PERIOD[base[0].lower()]
+        limit, period = value.split('/')
+        self.factor, self.period_name = self.RATE_MASK.match(period).groups()
+        self.limit = int(limit)
+        self.period = int(self.factor or 1) * self.period_duration
 
-    __slots__ = ('limit', 'period')
+    @property
+    def period_duration(self):
+        return self.DURATIONS[self.period_name[0].lower()]
+
+    __slots__ = ('limit', 'period', 'factor', 'period_name')
 
     def __init__(self, rate):
         self.rate = rate
