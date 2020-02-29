@@ -6,6 +6,7 @@ __all__ = [
 ]
 
 import asyncio
+import collections
 import random
 import re
 from collections import deque
@@ -67,26 +68,41 @@ class Throttle(ThrottleMixin):
     Instance of this class is awaitable object.
     """
 
-    __slots__ = ('history', )
+    __slots__ = ('_loop', '_waiters', '_trace')
 
-    def __init__(self, rate):
+    def __init__(self, rate, *, loop=None):
         super().__init__(rate)
-        self.history = []
+        self._loop = loop or asyncio.get_event_loop()
+        self._waiters = collections.deque()
+        self._trace = collections.deque()
+
+    def locked(self):
+        """Return True if throttle was acquired
+        more than `limit` times during the `period`."""
+        now = time()
+        while self._trace and now - self._trace[0] > self.period:
+            self._trace.popleft()
+        return len(self._trace) >= self.limit
 
     async def acquire(self):
+        """Acquire a throttle."""
+        fut = self._loop.create_future()
+        self._waiters.append(fut)
         while True:
-            now = time()
-            while self.history and now - self.history[-1] > self.period:
-                self.history.pop()
-
-            if len(self.history) < self.limit:
+            if fut.done():
+                self._waiters.remove(fut)
                 break
-            else:
-                delay = self.period - (now - self.history[-1])
+            elif self.locked():
+                delay = self.period - (time() - self._trace[0])
                 await asyncio.sleep(delay)
+            else:
+                for fut in self._waiters:
+                    if not fut.done():
+                        fut.set_result(True)
 
     def release(self):
-        self.history.insert(0, time())
+        """Release a throttle."""
+        self._trace.append(time())
 
 
 class LockingThrottle(ThrottleMixin):
