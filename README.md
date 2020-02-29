@@ -5,7 +5,12 @@
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://aiothrottling.readthedocs.io/en/latest/)
 [![Travis status](https://travis-ci.org/KonstantinTogoi/aiothrottling.svg)](https://travis-ci.org/KonstantinTogoi/aiothrottling)
 
-Throttles for Python coroutines.
+*aiothrottling* synchronization primitives are designed to be extensions
+(along the time) to *asyncio*'s synchronization primitives.
+
+*aiothrottling* has the following basic synchronization primitives:
+
+- `Throttle`
 
 ## Getting started
 
@@ -13,6 +18,35 @@ aiothrottling requires python 3.5+. Install package using pip
 
 ```python
 pip install aiothrottling
+```
+
+### Throttle
+
+Implements a rate limiting for asyncio task.
+A throttle can be used to guarantee exclusive access to a shared resources
+and locks access for a given time after releasing.
+
+The preferred way to use a `Throttle` is an `async with` statement:
+
+```python
+throttle = Throttle('1/s')
+
+# ... later
+async with throttle:
+    # access shared state
+```
+
+which is equivalent to:
+
+```python
+throttle  = Throttle('1/s')
+
+# ... later
+await throttle.acquire()
+try:
+    # access shared state
+finally:
+    throttle.release()
 ```
 
 ## Examples
