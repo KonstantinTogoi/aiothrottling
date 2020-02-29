@@ -59,15 +59,15 @@ class Throttle(ThrottleMixin):
         return wrapper
 
     def __await__(self):
-        return self.delay().__await__()
+        return self.acquire().__await__()
 
     async def __aenter__(self):
-        await self.delay()
+        await self.acquire()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self.release()
 
-    async def delay(self):
+    async def acquire(self):
         while True:
             now = time()
             while self.history and now - self.history[-1] > self.period:
