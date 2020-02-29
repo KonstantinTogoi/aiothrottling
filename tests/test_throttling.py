@@ -95,13 +95,13 @@ class TestDistributedThrottle:
 
         start_time = time()
         for i in range(max_n_calls):
-            async with throttle.acquire():
+            async with throttle:
                 pass
         stop_time = time()
 
         assert stop_time - start_time <= throttle.period
 
-        async with throttle.acquire():
+        async with throttle:
             pass
 
         assert time() - start_time > throttle.period

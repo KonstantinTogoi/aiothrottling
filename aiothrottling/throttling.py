@@ -1,7 +1,6 @@
 import asyncio
 import random
 import re
-from contextlib import asynccontextmanager
 from collections import deque
 from functools import wraps
 from time import time
@@ -110,13 +109,20 @@ class DistributedThrottle(LockingThrottle):
     def n_resources(self):
         return len(self.resources)
 
-    __slots__ = ('shuffle', 'histories', 'blocked')
+    __slots__ = ('shuffle', 'histories', 'blocked', 'vacant_num')
 
     def __init__(self, resources, rate='3/s', lock=None, shuffle=False):
         super().__init__(resources, rate=rate, lock=lock)
         self.shuffle = shuffle
         self.histories = [(i, deque()) for i in range(len(resources))]
         self.blocked = []
+        self.vacant_num = -1
+
+    async def __aenter__(self):
+        return await self.acquire()
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.release()
 
     def block(self, resource):
         """Marks a resource as invalid / unavailable."""
@@ -129,7 +135,6 @@ class DistributedThrottle(LockingThrottle):
             while history and now - history[0] > self.period:
                 history.popleft()
 
-    @asynccontextmanager
     async def acquire(self, num=None):
         """Returns available resource."""
         histories = self.histories if num is None else [self.histories[num]]
@@ -158,8 +163,11 @@ class DistributedThrottle(LockingThrottle):
                 delay = self.period - (now - min(h[0] for h in histories))
                 await asyncio.sleep(delay)
 
-        yield self.resources[vacant_num]
-        self.histories[vacant_num][1].append(time())
+        self.vacant_num = vacant_num
+        return self.resources[vacant_num]
+
+    async def release(self):
+        self.histories[self.vacant_num][1].append(time())
 
 
 throttle = Throttle
