@@ -122,7 +122,7 @@ class DistributedThrottle(LockingThrottle):
         return await self.acquire()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.release()
+        self.release()
 
     def block(self, resource):
         """Marks a resource as invalid / unavailable."""
@@ -166,7 +166,7 @@ class DistributedThrottle(LockingThrottle):
         self.vacant_num = vacant_num
         return self.resources[vacant_num]
 
-    async def release(self):
+    def release(self):
         self.histories[self.vacant_num][1].append(time())
 
 
