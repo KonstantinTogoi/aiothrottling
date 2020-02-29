@@ -1,6 +1,9 @@
 """Rate limiting primitives."""
 
-__all__ = ['Throttle', 'LockingThrottle', 'DistributedThrottle']
+__all__ = [
+    'Throttle', 'DistributedThrottle', 'LockingThrottle',
+    'throttle', 'dthrottle'
+]
 
 import asyncio
 import random
