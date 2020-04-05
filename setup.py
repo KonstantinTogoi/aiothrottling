@@ -1,5 +1,5 @@
 from os.path import dirname, join
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 readme_path = join(dirname(__file__), 'README.md')
@@ -18,7 +18,7 @@ setup(
     long_description=readme,
     long_description_content_type='text/markdown',
     license='BSD',
-    packages=['aiothrottling'],
+    packages=find_packages(),
     keywords=['asyncio api throttling throttler'],
     classifiers=[
         'Intended Audience :: Developers',
@@ -27,6 +27,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
