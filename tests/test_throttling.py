@@ -2,59 +2,8 @@ from time import time
 
 import pytest
 
-from aiothrottling import Throttle, DistributedThrottle
+from aiothrottling import DistributedThrottle
 from aiothrottling.lock import MemoryLock
-
-
-class TestThrottle:
-
-    NUM_ITERS = 10
-
-    @pytest.fixture(params=['3/s', '6/s', '8/2s', '9/3s'])
-    def rate(self, request):
-        return request.param
-
-    @pytest.fixture
-    def throttle(self, rate):
-        return Throttle(rate=rate)
-
-    @pytest.mark.asyncio
-    async def test_decorator(self, throttle):
-        interval = throttle.period / throttle.limit
-        now = time() - interval
-
-        @throttle
-        async def foo():
-            pass
-
-        for i in range(self.NUM_ITERS):
-            await foo()
-            if i % throttle.limit == 0:
-                assert time() - now >= interval
-                now = time()
-
-    @pytest.mark.asyncio
-    async def test_awaitable(self, throttle):
-        interval = throttle.period / throttle.limit
-        now = time() - interval
-
-        for i in range(self.NUM_ITERS):
-            await throttle
-            if i % throttle.limit == 0:
-                assert time() - now >= interval
-                now = time()
-            throttle.release()
-
-    @pytest.mark.asyncio
-    async def test_context(self, throttle):
-        interval = throttle.period / throttle.limit
-        now = time() - interval
-
-        for i in range(self.NUM_ITERS):
-            async with throttle:
-                if i % throttle.limit == 0:
-                    assert time() - now >= interval
-                    now = time()
 
 
 class TestDistributedThrottle:
@@ -92,7 +41,7 @@ class TestDistributedThrottle:
 
     @staticmethod
     async def _test_acquire(throttle):
-        max_n_calls = throttle.limit * len(throttle.resources)
+        max_n_calls = throttle.limit.numerator * len(throttle.resources)
 
         start_time = time()
         for i in range(max_n_calls):

@@ -1,119 +1,20 @@
 """Rate limiting primitives."""
 
 __all__ = [
-    'Throttle', 'DistributedThrottle', 'LockingThrottle',
-    'throttle', 'dthrottle'
+    'DistributedThrottle', 'LockingThrottle', 'dthrottle'
 ]
 
 import asyncio
-import collections
 import random
-import re
 from collections import deque
-from functools import wraps
 from time import time
+
+from aiothrottles.throttles import RateMixin, Throttle
 
 from .lock import Lock
 
 
-class ThrottleMixin:
-    """Encapsulates rate."""
-
-    DURATIONS = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
-    RATE_MASK = re.compile(r'([0-9]*)([A-Za-z]+)')
-
-    @property
-    def rate(self):
-        return '{limit}/{factor}{period_name}'.format(
-            limit=self.limit,
-            factor=self.factor or '',
-            period_name=self.period_name
-        )
-
-    @rate.setter
-    def rate(self, value):
-        limit, period = value.split('/')
-        self.factor, self.period_name = self.RATE_MASK.match(period).groups()
-        self.limit = int(limit)
-        self.period = int(self.factor or 1) * self.period_duration
-
-    @property
-    def period_duration(self):
-        return self.DURATIONS[self.period_name[0].lower()]
-
-    __slots__ = ('limit', 'period', 'factor', 'period_name')
-
-    def __init__(self, rate):
-        self.rate = rate
-
-    def __call__(self, coro):
-        @wraps(coro)
-        async def wrapper(*args, **kwargs):
-            async with self:
-                return await coro(*args, **kwargs)
-        return wrapper
-
-    def __await__(self):
-        return self.acquire().__await__()
-
-    async def __aenter__(self):
-        await self.acquire()
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.release()
-
-    async def acquire(self):
-        pass
-
-    def release(self):
-        pass
-
-
-class Throttle(ThrottleMixin):
-    """
-    Rate throttling of coroutine calls.
-
-    Instance of this class is awaitable object.
-    """
-
-    __slots__ = ('_loop', '_waiters', '_trace')
-
-    def __init__(self, rate, *, loop=None):
-        super().__init__(rate)
-        self._loop = loop or asyncio.get_event_loop()
-        self._waiters = collections.deque()
-        self._trace = collections.deque()
-
-    def locked(self):
-        """Return True if throttle was acquired
-        more than `limit` times during the `period`."""
-        now = time()
-        while self._trace and now - self._trace[0] > self.period:
-            self._trace.popleft()
-        return len(self._trace) >= self.limit
-
-    async def acquire(self):
-        """Acquire a throttle."""
-        fut = self._loop.create_future()
-        self._waiters.append(fut)
-        while True:
-            if fut.done():
-                self._waiters.remove(fut)
-                break
-            elif self.locked():
-                delay = self.period - (time() - self._trace[0])
-                await asyncio.sleep(delay)
-            else:
-                for fut in self._waiters:
-                    if not fut.done():
-                        fut.set_result(True)
-
-    def release(self):
-        """Release a throttle."""
-        self._trace.append(time())
-
-
-class LockingThrottle(ThrottleMixin):
+class LockingThrottle(RateMixin):
     """Abstract throttle that can lock resources."""
 
     __slots__ = ('resources', 'lock')
