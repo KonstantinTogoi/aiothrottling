@@ -10,7 +10,7 @@ class Lock:
     async def acquire(self, *args):
         pass
 
-    async def release(self, *args):
+    def release(self, *args):
         pass
 
 
@@ -20,7 +20,7 @@ class CacheLock(Lock, Cache):
     async def acquire(self, key, value):
         return self.check_in(key, value)
 
-    async def release(self, key):
+    def release(self, key):
         return self.check_out(key)
 
 
@@ -36,8 +36,8 @@ class ExclusiveLock(Cache):
         else:
             await self.check_in(key, value)
 
-    async def release(self, key):
-        await self.check_out(key)
+    def release(self, key):
+        self.check_out(key)
 
 
 class MemoryLock(MemoryCache, ExclusiveLock):

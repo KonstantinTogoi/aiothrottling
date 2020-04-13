@@ -19,20 +19,18 @@ class LockingThrottle(RateMixin):
 
     __slots__ = ('resources', 'lock')
 
-    def __init__(self, resources, rate='3/s', lock: Lock = None):
+    def __init__(self, resources, rate='3/s', lock=None):
         super().__init__(rate)
         self.resources = resources
-        self.lock = lock
+        self.lock = lock or Lock()
 
     async def __aenter__(self):
-        if self.lock:
-            for res in self.resources:
-                await self.lock.acquire(self.pk(res))
+        for res in self.resources:
+            await self.lock.acquire(self.pk(res))
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.lock:
-            for res in self.resources:
-                await self.lock.release(self.pk(res))
+        for res in self.resources:
+            self.lock.release(self.pk(res))
 
     def pk(self, resource):
         """A resource's key for lock table."""
