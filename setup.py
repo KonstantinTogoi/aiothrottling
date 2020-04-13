@@ -14,12 +14,16 @@ setup(
     author='Konstantin Togoi',
     author_email='konstantin.togoi@protonmail.com',
     url='https://github.com/KonstantinTogoi/aiothrottling',
-    description='Throttles for Python coroutines.',
+    description='Throttling utilities for asyncio tasks.',
     long_description=readme,
     long_description_content_type='text/markdown',
     license='BSD',
     packages=find_packages(),
-    keywords=['asyncio api throttling throttler'],
+    python_requires='>=3.5',
+    install_requires=['aiothrottles'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest-asyncio'],
+    keywords=['asyncio api throttle throttles throttler throttling'],
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -29,8 +33,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3 :: Only',
+        'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'pytest-asyncio']
+    ]
 )
